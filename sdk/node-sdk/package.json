@@ -1,0 +1,12 @@
+{
+  "name": "@devsentinel/node-sdk",
+  "version": "0.1.0",
+  "description": "DevSentinel Node.js SDK for Express Application Monitoring",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "echo 'SDK build step to be configured in Module 4'"
+  },
+  "keywords": ["devsentinel", "observability", "apm", "monitoring"],
+  "license": "MIT"
+}

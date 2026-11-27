@@ -1,0 +1,32 @@
+{
+  "name": "devsentinel-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DevSentinel - AI-Powered Application Monitoring & Incident Intelligence Platform",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "sdk/*"
+  ],
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:stop": "docker compose stop",
+    "db:start": "docker compose start",
+    "db:health": "powershell -ExecutionPolicy Bypass -File scripts/verify-db.ps1",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend"
+  },
+  "keywords": [
+    "observability",
+    "monitoring",
+    "ai",
+    "incident-intelligence",
+    "opentelemetry"
+  ],
+  "author": "Sanika Salunkhe",
+  "license": "MIT"
+}

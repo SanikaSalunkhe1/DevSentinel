@@ -1,0 +1,94 @@
+// Prisma Schema for DevSentinel
+// Modular Observability & Incident Intelligence Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// -----------------------------------------------------------------------------
+// Models
+// -----------------------------------------------------------------------------
+
+model User {
+  id           String            @id @default(uuid()) @db.Uuid
+  email        String            @unique @db.VarChar(255)
+  name         String            @db.VarChar(255)
+  avatarUrl    String?           @db.Text
+  googleSub    String?           @unique @db.VarChar(255)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(6)
+
+  // Relationships
+  memberships  WorkspaceMember[]
+  sessions     Session[]
+
+  @@index([email])
+  @@index([googleSub])
+  @@map("users")
+}
+
+model Workspace {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String            @db.VarChar(255)
+  slug        String            @unique @db.VarChar(100)
+  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(6)
+
+  // Relationships
+  members     WorkspaceMember[]
+
+  @@index([slug])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid()) @db.Uuid
+  workspaceId String        @db.Uuid
+  userId      String        @db.Uuid
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now()) @db.Timestamptz(6)
+
+  // Foreign keys & Cascade
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Constraints & Indexes
+  @@unique([workspaceId, userId], name: "uq_workspace_user")
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+model Session {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  token       String    @unique @db.VarChar(255)
+  userAgent   String?   @db.Text
+  ipAddress   String?   @db.VarChar(45)
+  expiresAt   DateTime  @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+
+  // Foreign key & Cascade
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for fast token lookup and expiration purging
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
