@@ -66,6 +66,4 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 ---
-
-## Hardware Optimization Note
-This platform is architected to run within strict resource budgets (optimized for laptops with 8 GB RAM / ~5.83 GB usable). Services can be run individually on-demand rather than running heavy multi-container stacks.
+ 
