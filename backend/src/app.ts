@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './modules/auth/auth.routes.js';
+import workspaceRoutes from './modules/workspace/workspace.routes.js';
 import { requireAuth } from './middleware/auth.middleware.js';
 import { config } from './config/index.js';
 
@@ -38,6 +39,7 @@ app.get('/', (req: Request, res: Response) => {
     status: 'operational',
     endpoints: {
       auth: '/api/v1/auth',
+      workspaces: '/api/v1/workspaces',
       health: '/health',
     },
   });
@@ -45,6 +47,9 @@ app.get('/', (req: Request, res: Response) => {
 
 // Authentication Routes
 app.use('/api/v1/auth', authRoutes);
+
+// Workspace Routes
+app.use('/api/v1/workspaces', workspaceRoutes);
 
 // Protected Test Route (Used to verify route guard)
 app.get('/api/v1/test/protected', requireAuth, (req: Request, res: Response) => {

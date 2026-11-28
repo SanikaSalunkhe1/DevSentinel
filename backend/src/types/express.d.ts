@@ -13,6 +13,7 @@ declare global {
     interface Request {
       user?: AuthenticatedUser;
       session?: Session;
+      workspaceRole?: WorkspaceRole;
     }
   }
 }

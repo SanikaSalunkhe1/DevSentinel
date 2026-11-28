@@ -13,6 +13,7 @@
     "db:seed": "prisma db seed",
     "db:test": "tsx src/database/test-db.ts",
     "test:auth": "tsx src/modules/auth/auth.test.ts",
+    "test:workspace": "tsx src/modules/workspace/workspace.test.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {
