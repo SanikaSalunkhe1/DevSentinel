@@ -32,6 +32,18 @@ enum AppStatus {
   ARCHIVED
 }
 
+enum ConnectionStatus {
+  AWAITING_TELEMETRY
+  CONNECTED
+  DISCONNECTED
+}
+
+enum TelemetryEventType {
+  HTTP_REQUEST
+  ERROR
+  LOG
+}
+
 // -----------------------------------------------------------------------------
 // Models
 // -----------------------------------------------------------------------------
@@ -62,8 +74,9 @@ model Workspace {
   updatedAt   DateTime          @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  members     WorkspaceMember[]
+  members      WorkspaceMember[]
   applications Application[]
+  telemetry    TelemetryEvent[]
 
   @@index([slug])
   @@map("workspaces")
@@ -107,23 +120,26 @@ model Session {
 }
 
 model Application {
-  id            String         @id @default(uuid()) @db.Uuid
-  appId         String         @unique @db.VarChar(32)      // human-readable unique ID like "app_a1b2c3d4"
-  workspaceId   String         @db.Uuid
-  name          String         @db.VarChar(255)
-  description   String?        @db.Text
-  language      String?        @db.VarChar(50)               // e.g. "TypeScript", "Python", "Go"
-  framework     String?        @db.VarChar(50)               // e.g. "Express", "FastAPI", "Gin"
-  environment   AppEnvironment @default(DEVELOPMENT)
-  status        AppStatus      @default(ACTIVE)
-  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime       @updatedAt @db.Timestamptz(6)
+  id               String           @id @default(uuid()) @db.Uuid
+  appId            String           @unique @db.VarChar(32)      // human-readable unique ID like "app_a1b2c3d4"
+  workspaceId      String           @db.Uuid
+  name             String           @db.VarChar(255)
+  description      String?          @db.Text
+  language         String?          @db.VarChar(50)               // e.g. "TypeScript", "Python", "Go"
+  framework        String?          @db.VarChar(50)               // e.g. "Express", "FastAPI", "Gin"
+  environment      AppEnvironment   @default(DEVELOPMENT)
+  status           AppStatus        @default(ACTIVE)
+  connectionStatus ConnectionStatus @default(AWAITING_TELEMETRY)
+  lastTelemetryAt  DateTime?        @db.Timestamptz(6)
+  createdAt        DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @db.Timestamptz(6)
 
   // Foreign key
-  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Relationships
-  apiKeys       ApiKey[]
+  apiKeys          ApiKey[]
+  telemetryEvents  TelemetryEvent[]
 
   // Indexes
   @@index([workspaceId])
@@ -152,4 +168,40 @@ model ApiKey {
   @@index([applicationId])
   @@index([prefix])
   @@map("api_keys")
+}
+
+model TelemetryEvent {
+  id            String             @id @default(uuid()) @db.Uuid
+  workspaceId   String             @db.Uuid
+  applicationId String             @db.Uuid
+  apiKeyId      String?            @db.Uuid
+  type          TelemetryEventType
+  timestamp     DateTime           @db.Timestamptz(6)
+  serviceName   String?            @db.VarChar(100)
+  environment   String?            @db.VarChar(50)
+
+  // HTTP metric fields
+  method        String?            @db.VarChar(16)
+  route         String?            @db.VarChar(512)
+  path          String?            @db.VarChar(1024)
+  statusCode    Int?
+  durationMs    Float?
+
+  // Log / Error fields
+  level         String?            @db.VarChar(20)
+  message       String?            @db.Text
+  errorName     String?            @db.VarChar(255)
+  stack         String?            @db.Text
+  metadata      Json?
+
+  receivedAt    DateTime           @default(now()) @db.Timestamptz(6)
+
+  // Foreign keys & Cascade
+  workspace     Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, applicationId, timestamp])
+  @@index([applicationId, type, timestamp])
+  @@index([workspaceId, receivedAt])
+  @@map("telemetry_events")
 }

@@ -6,8 +6,11 @@ import authRoutes from './modules/auth/auth.routes.js';
 import workspaceRoutes from './modules/workspace/workspace.routes.js';
 import applicationRoutes from './modules/application/application.routes.js';
 import apiKeyRoutes from './modules/apikey/apikey.routes.js';
+import ingestRoutes from './modules/ingest/ingest.routes.js';
+import { ingestController } from './modules/ingest/ingest.controller.js';
 import { apiKeyController } from './modules/apikey/apikey.controller.js';
 import { requireAuth } from './middleware/auth.middleware.js';
+import { requireWorkspaceMember } from './middleware/workspace.middleware.js';
 import { requireApiKey } from './middleware/apikey.middleware.js';
 import { config } from './config/index.js';
 
@@ -21,6 +24,9 @@ app.use(cors({
   origin: config.clientUrl,
   credentials: true,
 }));
+
+// Telemetry Ingestion Routes (mounted before global 5mb JSON parser to enforce strict 512kb limit)
+app.use('/api/v1/ingest', ingestRoutes);
 
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -45,6 +51,7 @@ app.get('/', (req: Request, res: Response) => {
       auth: '/api/v1/auth',
       workspaces: '/api/v1/workspaces',
       applications: '/api/v1/workspaces/:workspaceId/applications',
+      ingest: '/api/v1/ingest',
       health: '/health',
     },
   });
@@ -61,6 +68,14 @@ app.use('/api/v1/workspaces/:workspaceId/applications', applicationRoutes);
 
 // API Key Management Routes (nested under applications)
 app.use('/api/v1/workspaces/:workspaceId/applications/:applicationId/keys', apiKeyRoutes);
+
+// Workspace-scoped Telemetry Query Route
+app.get(
+  '/api/v1/workspaces/:workspaceId/applications/:applicationId/telemetry',
+  requireAuth,
+  requireWorkspaceMember,
+  ingestController.listTelemetry.bind(ingestController)
+);
 
 // API Key Validation Endpoint (for SDKs / services)
 app.post('/api/v1/auth/validate-key', apiKeyController.validateKey.bind(apiKeyController));

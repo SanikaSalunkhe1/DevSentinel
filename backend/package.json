@@ -16,6 +16,7 @@
     "test:workspace": "tsx src/modules/workspace/workspace.test.ts",
     "test:app": "tsx src/modules/application/application.test.ts",
     "test:apikey": "tsx src/modules/apikey/apikey.test.ts",
+    "test:ingest": "tsx src/modules/ingest/ingest.test.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {
