@@ -1,20 +1,27 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import authRoutes from './modules/auth/auth.routes.js';
+import { requireAuth } from './middleware/auth.middleware.js';
+import { config } from './config/index.js';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = config.port;
 
+// Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: config.clientUrl,
   credentials: true,
 }));
 
 app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// Health Check Endpoint
+// Base Endpoints
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
@@ -24,20 +31,42 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// Root / API info
 app.get('/', (req: Request, res: Response) => {
   res.status(200).json({
     name: 'DevSentinel API',
     version: '0.1.0',
     status: 'operational',
+    endpoints: {
+      auth: '/api/v1/auth',
+      health: '/health',
+    },
   });
 });
 
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`[DevSentinel Backend] Running on http://localhost:${PORT}`);
-    console.log(`[DevSentinel Backend] Health check available at http://localhost:${PORT}/health`);
+// Authentication Routes
+app.use('/api/v1/auth', authRoutes);
+
+// Protected Test Route (Used to verify route guard)
+app.get('/api/v1/test/protected', requireAuth, (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'Access granted to protected route',
+    user: {
+      id: req.user?.id,
+      email: req.user?.email,
+      name: req.user?.name,
+    },
+    workspaces: req.user?.memberships.map((m) => m.workspace.name),
   });
-}
+});
+
+// Centralized Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error('[Unhandled Server Error]:', err);
+  res.status(err.status || 500).json({
+    error: err.name || 'InternalServerError',
+    message: err.message || 'An unexpected error occurred',
+  });
+});
 
 export default app;

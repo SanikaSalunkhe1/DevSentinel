@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "DevSentinel Main Backend Service (Node.js + Express + TypeScript)",
-  "main": "dist/app.js",
+  "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/app.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/app.js",
+    "start": "node dist/server.js",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:test": "tsx src/database/test-db.ts",
+    "test:auth": "tsx src/modules/auth/auth.test.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {
@@ -19,11 +20,15 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "google-auth-library": "^11.3.4",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
