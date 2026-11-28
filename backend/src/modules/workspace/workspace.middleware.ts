@@ -13,7 +13,7 @@ export async function requireWorkspaceMember(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const workspaceId = req.params.workspaceId;
+  const workspaceId = String(req.params.workspaceId || '');
   const userId = req.user?.id;
 
   if (!workspaceId || !userId) {

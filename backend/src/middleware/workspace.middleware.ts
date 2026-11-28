@@ -18,7 +18,7 @@ export async function requireWorkspaceMember(
 ): Promise<void> {
   try {
     const userId = req.user?.id;
-    const workspaceId = req.params.workspaceId;
+    const workspaceId = String(req.params.workspaceId || '');
 
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized', message: 'Authentication required' });
@@ -62,7 +62,7 @@ export function requireWorkspaceRole(minimumRole: WorkspaceRole) {
   return async function (req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
-      const workspaceId = req.params.workspaceId;
+      const workspaceId = String(req.params.workspaceId || '');
 
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized', message: 'Authentication required' });

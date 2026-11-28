@@ -4,7 +4,11 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './modules/auth/auth.routes.js';
 import workspaceRoutes from './modules/workspace/workspace.routes.js';
+import applicationRoutes from './modules/application/application.routes.js';
+import apiKeyRoutes from './modules/apikey/apikey.routes.js';
+import { apiKeyController } from './modules/apikey/apikey.controller.js';
 import { requireAuth } from './middleware/auth.middleware.js';
+import { requireApiKey } from './middleware/apikey.middleware.js';
 import { config } from './config/index.js';
 
 dotenv.config();
@@ -40,6 +44,7 @@ app.get('/', (req: Request, res: Response) => {
     endpoints: {
       auth: '/api/v1/auth',
       workspaces: '/api/v1/workspaces',
+      applications: '/api/v1/workspaces/:workspaceId/applications',
       health: '/health',
     },
   });
@@ -50,6 +55,24 @@ app.use('/api/v1/auth', authRoutes);
 
 // Workspace Routes
 app.use('/api/v1/workspaces', workspaceRoutes);
+
+// Application Routes (nested under workspaces)
+app.use('/api/v1/workspaces/:workspaceId/applications', applicationRoutes);
+
+// API Key Management Routes (nested under applications)
+app.use('/api/v1/workspaces/:workspaceId/applications/:applicationId/keys', apiKeyRoutes);
+
+// API Key Validation Endpoint (for SDKs / services)
+app.post('/api/v1/auth/validate-key', apiKeyController.validateKey.bind(apiKeyController));
+
+// Protected API Key Test Route (Used to verify requireApiKey middleware)
+app.get('/api/v1/test/apikey-protected', requireApiKey, (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'API key authenticated',
+    data: req.apiKey,
+  });
+});
 
 // Protected Test Route (Used to verify route guard)
 app.get('/api/v1/test/protected', requireAuth, (req: Request, res: Response) => {

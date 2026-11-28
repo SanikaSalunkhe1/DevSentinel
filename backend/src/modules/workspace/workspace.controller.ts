@@ -29,7 +29,7 @@ export class WorkspaceController {
    */
   async getWorkspace(req: Request, res: Response): Promise<void> {
     try {
-      const { workspaceId } = req.params;
+      const workspaceId = String(req.params.workspaceId);
       const userId = req.user!.id;
 
       const workspace = await workspaceService.getWorkspaceById(workspaceId, userId);
@@ -56,7 +56,7 @@ export class WorkspaceController {
    */
   async getWorkspaceBySlug(req: Request, res: Response): Promise<void> {
     try {
-      const { slug } = req.params;
+      const slug = String(req.params.slug);
       const userId = req.user!.id;
 
       const workspace = await workspaceService.getWorkspaceBySlug(slug, userId);
@@ -83,7 +83,7 @@ export class WorkspaceController {
    */
   async updateWorkspace(req: Request, res: Response): Promise<void> {
     try {
-      const { workspaceId } = req.params;
+      const workspaceId = String(req.params.workspaceId);
       const userId = req.user!.id;
       const { name, slug } = req.body;
 
@@ -156,7 +156,7 @@ export class WorkspaceController {
    */
   async listMembers(req: Request, res: Response): Promise<void> {
     try {
-      const { workspaceId } = req.params;
+      const workspaceId = String(req.params.workspaceId);
       const userId = req.user!.id;
 
       const workspace = await workspaceService.getWorkspaceById(workspaceId, userId);
@@ -188,7 +188,7 @@ export class WorkspaceController {
    */
   async getMyRole(req: Request, res: Response): Promise<void> {
     try {
-      const { workspaceId } = req.params;
+      const workspaceId = String(req.params.workspaceId);
       const userId = req.user!.id;
 
       const role = await workspaceService.getMemberRole(workspaceId, userId);

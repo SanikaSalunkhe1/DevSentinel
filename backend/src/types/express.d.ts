@@ -1,4 +1,5 @@
 import { User, Session, Workspace, WorkspaceRole } from '@prisma/client';
+import { ValidatedKey } from '../modules/apikey/apikey.service.js';
 
 export interface AuthenticatedUser extends User {
   memberships: {
@@ -14,6 +15,7 @@ declare global {
       user?: AuthenticatedUser;
       session?: Session;
       workspaceRole?: WorkspaceRole;
+      apiKey?: ValidatedKey;
     }
   }
 }
