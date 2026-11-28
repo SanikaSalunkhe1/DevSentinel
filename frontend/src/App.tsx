@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ApplicationsPage } from './pages/ApplicationsPage';
+import { ApplicationDetailPage } from './pages/ApplicationDetailPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { PublicOnlyRoute } from './components/auth/PublicOnlyRoute';
 
@@ -15,6 +17,8 @@ export default function App() {
       {/* Protected routes (redirect to /login if unauthenticated) */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/applications" element={<ApplicationsPage />} />
+        <Route path="/applications/:applicationId" element={<ApplicationDetailPage />} />
       </Route>
 
       {/* Default fallback route */}
